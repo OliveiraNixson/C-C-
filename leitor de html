@@ -1,0 +1,79 @@
+#include <iostream>
+#include <map>
+#include <vector>
+#include <sstream>
+using namespace std;
+
+int main() {
+    //Criando as variveis de entrada do programa
+    int n,q;
+    
+    //lendo as entradas respectivas de n e q 
+    cin >> n >> q;
+    
+    //ignorando as quebras de linhas
+    cin.ignore();
+    
+    // Criando um dicionario para as queries cujo valor sera do tipo caminho_da_tagnome_do_attr e o valor
+    map<string, string> attributes;
+    
+    //Valores de referencias para linhas atual e caminho 
+    string line, current_path = "";
+    
+    //vetor qu vai armzenzar as tags e permitir rastrear o camimho
+    vector<string> tag_stack;
+    
+    for(int i=0; i<n; i++) {
+        //para cada linha leia line
+        getline(cin, line);
+        
+        //se a linhas lida for igual ao contido de 0 a 2
+        if(line.substr(0,2)=="</") {
+            //remova do caminho atual o elemento no topo da pilhas
+            tag_stack.pop_back();
+        }
+        else {
+            //caso contrario eh uma tag de abertura e removemos '<>' do inicio da fila e convertemos o valor da tag para stringstream para lermos os valores
+            line = line.substr(1, line.length()-2);
+            
+            //Usamos aqui stringstream para extrair o valor contido nas tags
+            stringstream ss(line);
+            string tag_name;
+            // ss tag_name: Extrai a primeira palavra do stringstream (que serah o nome da tag) e a armazena em tag_name.
+            ss >> tag_name;
+            
+            // se a tag estiver vazia construimos o caminho 
+            if(tag_stack.empty()) {
+                //atribuimos aqui o valor de cada nivel
+                current_path = tag_name;
+            } else {
+                //se tag não for vazia concatenamos o valor de current path a ela
+                current_path = tag_stack.back() + "." + tag_name;
+            }
+            tag_stack.push_back(current_path);
+            
+            //Aqui declaramos algumas variaveis e contianumaos lendo enquando existirem valores string stream
+            string attr_name, eq, attr_value;
+            while(ss >> attr_name >> eq >> attr_value) {
+                //Aqui se le o valor do conteudo e atribui a attr_value
+                attr_value = attr_value.substr(1, attr_value.length()-2);
+                
+                //attriibutes recebem como chave o valor do path mais o atributo nome e recebe o attr_value como valor
+                attributes[current_path + "~" + attr_name] = attr_value;
+            }
+        }
+    }
+    
+    // Para cada query lemos uma linha
+    for(int i = 0; i < q; i++) {
+        string query;
+        getline(cin, query);
+        if(attributes.find(query) != attributes.end()) {
+            cout << attributes[query] << endl;
+        } else {
+            cout << "Not Found!" << endl;
+        }
+    }
+    
+    return 0;
+}
